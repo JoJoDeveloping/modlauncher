@@ -8,6 +8,53 @@ import java.util.function.*;
 public class LamdbaExceptionUtils {
 
     /**
+     * .forEach(handlingConsumer(name -> System.out.println(Class.forName(name)), name -> System.out.println("Could not find "+name)));
+     *  or .forEach(handlingConsumer(ClassNameUtil::println, name -> System.out.println("Could not find "+name)));
+     */
+    public static <T, E extends Exception> Consumer<T> handlingConsumer(Consumer_WithExceptions<T, E> consumer, Consumer<T> alternative) {
+        return t -> {
+            try {
+                consumer.accept(t);
+            } catch (Exception exception) {
+                alternative.accept(t);
+            }
+        };
+    }
+
+    public static <T, U, E extends Exception> BiConsumer<T, U> handlingBiConsumer(BiConsumer_WithExceptions<T, U, E> biConsumer, BiConsumer<T, U> alternative) {
+        return (t, u) -> {
+            try {
+                biConsumer.accept(t, u);
+            } catch (Exception exception) {
+                alternative.accept(t, u);
+            }
+        };
+    }
+
+    /**
+     * .flatMap(handlingFunction(Files::list, x -> Stream.empty()))
+     */
+    public static <T, R, E extends Exception> Function<T, R> handlingFunction(Function_WithExceptions<T, R, E> function, Function<T, R> alternative) {
+        return t -> {
+            try {
+                return function.apply(t);
+            } catch (Exception exception) {
+                return alternative.apply(t);
+            }
+        };
+    }
+
+    public static <T, E extends Exception> Supplier<T> handlingSupplier(Supplier_WithExceptions<T, E> function, Supplier<T> alternative) {
+        return () -> {
+            try {
+                return function.get();
+            } catch (Exception exception) {
+                return alternative.get();
+            }
+        };
+    }
+
+    /**
      * .forEach(rethrowConsumer(name -> System.out.println(Class.forName(name)))); or .forEach(rethrowConsumer(ClassNameUtil::println));
      */
     public static <T, E extends Exception> Consumer<T> rethrowConsumer(Consumer_WithExceptions<T, E> consumer) {
